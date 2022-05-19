@@ -24,7 +24,7 @@ func newBlock(_previousHash string, _difficulty int, _pendingTransactions []*Tra
 	return &block
 }
 
-func (b *Block) calculateHash() {
+func (b *Block) calculateHash() string {
 	var transactions []byte
 	if len(b.transactions) != 0 {
 		transactions, _ = json.Marshal(b.transactions)
@@ -35,6 +35,7 @@ func (b *Block) calculateHash() {
 	data := []byte(b.timestamp.String() + b.previousHash + string(transactions) + fmt.Sprint(b.nonce))
 	hash := sha256.Sum256(data)
 	b.hash = hex.EncodeToString(hash[:])
+	return b.hash
 }
 
 func (b *Block) mineBlock(_difficulty int) {
@@ -43,5 +44,13 @@ func (b *Block) mineBlock(_difficulty int) {
 		b.nonce += 1
 	}
 
-	fmt.Printf("Block mined: %s", b.hash)
+	fmt.Printf("Block mined: %s \n", b.hash)
+}
+
+func (b *Block) isValid(newBlock, oldBlock Block) bool {
+	if b.calculateHash() != b.hash {
+		return false
+	}
+
+	return true
 }

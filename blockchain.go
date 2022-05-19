@@ -8,7 +8,7 @@ type Blockchain struct {
 }
 
 func newBlockchain(_difficulty, _miningReward int) *Blockchain {
-	genesisBlock := newBlock("", _difficulty, []*Transaction{newTransaction("", "myaddress", 100), newTransaction("", "myaddress2", 100)})
+	genesisBlock := newBlock("", _difficulty, []*Transaction{newTransaction("", "myaddress", 100, nil), newTransaction("", "myaddress2", 100, nil)})
 	return &Blockchain{chain: []*Block{genesisBlock}, difficulty: _difficulty, miningReward: _miningReward}
 }
 
@@ -16,7 +16,7 @@ func (b *Blockchain) minePendingTransactions(miningRewardAddress string) {
 	latestBlock := b.chain[len(b.chain)-1]
 	newBlock := newBlock(latestBlock.hash, b.difficulty, b.pendingTransactions)
 	b.chain = append(b.chain, newBlock)
-	b.pendingTransactions = []*Transaction{newTransaction("", miningRewardAddress, b.miningReward)}
+	b.pendingTransactions = []*Transaction{newTransaction("", miningRewardAddress, b.miningReward, nil)}
 }
 
 func (b *Blockchain) getBalance(_address string) int {
