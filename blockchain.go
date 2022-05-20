@@ -1,14 +1,13 @@
 package main
 
 type Blockchain struct {
-	chain               []*Block
-	pendingTransactions []*Transaction
-	difficulty          int
-	miningReward        int
+	chain                    []*Block
+	pendingTransactions      []*Transaction
+	difficulty, miningReward int
 }
 
-func newBlockchain(_difficulty, _miningReward int) *Blockchain {
-	genesisBlock := newBlock("", _difficulty, []*Transaction{newTransaction("", "myaddress", 100, nil), newTransaction("", "myaddress2", 100, nil)})
+func newBlockchain(_difficulty, _miningReward int, accounts []*Account) *Blockchain {
+	genesisBlock := newBlock("", _difficulty, []*Transaction{newTransaction("", accounts[0].address, 100, nil), newTransaction("", accounts[2].address, 100, nil)})
 	return &Blockchain{chain: []*Block{genesisBlock}, difficulty: _difficulty, miningReward: _miningReward}
 }
 

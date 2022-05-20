@@ -1,27 +1,17 @@
 package main
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"fmt"
 )
 
 func main() {
-	// priv, x, y, err := elliptic.GenerateKey(elliptic.P256(), rand.Reader)
-	// x := priv.PublicKey
-	privatekey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // this generates a public & private key pair
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	fmt.Println("Private Key :")
-	fmt.Printf("%x \n", privatekey)
-	fmt.Println("Public Key :")
-	fmt.Printf("%x \n", privatekey.PublicKey)
-	goCoin := newBlockchain(4, 50)
-	goCoin.pendingTransactions = append(goCoin.pendingTransactions, newTransaction("11", "22", 10, privatekey))
-	goCoin.pendingTransactions = append(goCoin.pendingTransactions, newTransaction("22", "11", 1, privatekey))
-	goCoin.minePendingTransactions("myaddress")
-	goCoin.minePendingTransactions("myaddress")
-	balance := goCoin.getBalance("myaddress")
-	fmt.Printf("%d", balance)
+	accounts := createWallet().accounts
+	goCoin := newBlockchain(4, 50, accounts)
+	goCoin.pendingTransactions = append(goCoin.pendingTransactions, newTransaction(accounts[0].address, accounts[1].address, 10, accounts[0].privatekey))
+	goCoin.pendingTransactions = append(goCoin.pendingTransactions, newTransaction(accounts[2].address, accounts[3].address, 20, accounts[2].privatekey))
+	goCoin.minePendingTransactions(accounts[0].address)
+	goCoin.minePendingTransactions(accounts[0].address)
+	balance := goCoin.getBalance(accounts[0].address)
+	fmt.Printf("Balance of %s: %d \n", accounts[0].address, balance)
 
 }

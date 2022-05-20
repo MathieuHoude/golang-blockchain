@@ -10,11 +10,10 @@ import (
 )
 
 type Block struct {
-	timestamp    time.Time
-	transactions []*Transaction
-	previousHash string
-	hash         string
-	nonce        int
+	timestamp          time.Time
+	transactions       []*Transaction
+	previousHash, hash string
+	nonce              int
 }
 
 func newBlock(_previousHash string, _difficulty int, _pendingTransactions []*Transaction) *Block {

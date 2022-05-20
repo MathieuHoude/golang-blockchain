@@ -8,10 +8,9 @@ import (
 )
 
 type Transaction struct {
-	fromAddress string
-	toAddress   string
-	amount      int
-	signature   []byte
+	fromAddress, toAddress string
+	amount                 int
+	signature              []byte
 }
 
 func newTransaction(_fromAddress, _toAddress string, _amount int, _signingKey *ecdsa.PrivateKey) *Transaction {
@@ -36,16 +35,16 @@ func (t *Transaction) signTransaction(signingKey *ecdsa.PrivateKey) {
 	t.signature = signature
 }
 
-func (t *Transaction) isValid() bool {
-	if t.fromAddress == "" {
-		return true
-	}
+// func (t *Transaction) isValid() bool {
+// 	if t.fromAddress == "" {
+// 		return true
+// 	}
 
-	if t.signature == nil || len(t.signature) == 0 {
-		return false
-	}
+// 	if t.signature == nil || len(t.signature) == 0 {
+// 		return false
+// 	}
 
-	// Verify
-	verifystatus := ecdsa.Verify(&signingKey.PublicKey, t.calculateHash(), r, s)
-	fmt.Println(verifystatus) // should be true
-}
+// 	// Verify
+// 	verifystatus := ecdsa.Verify(&signingKey.PublicKey, t.calculateHash(), r, s)
+// 	fmt.Println(verifystatus) // should be true
+// }
