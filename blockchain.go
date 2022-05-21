@@ -1,5 +1,7 @@
 package main
 
+import "crypto/ecdsa"
+
 type Blockchain struct {
 	chain                    []*Block
 	pendingTransactions      []*Transaction
@@ -7,7 +9,11 @@ type Blockchain struct {
 }
 
 func newBlockchain(_difficulty, _miningReward int, accounts []*Account) *Blockchain {
-	genesisBlock := newBlock("", _difficulty, []*Transaction{newTransaction("", accounts[0].address, 100, nil), newTransaction("", accounts[2].address, 100, nil)})
+	var transactions []*Transaction
+	for _, account := range accounts {
+		transactions = append(transactions, newTransaction("", account.address, 100, nil))
+	}
+	genesisBlock := newBlock("", _difficulty, transactions)
 	return &Blockchain{chain: []*Block{genesisBlock}, difficulty: _difficulty, miningReward: _miningReward}
 }
 
@@ -23,15 +29,37 @@ func (b *Blockchain) getBalance(_address string) int {
 
 	for _, block := range b.chain {
 		for _, transaction := range block.transactions {
-			if transaction.fromAddress == _address {
-				balance -= transaction.amount
+			if transaction.Status != "rejected" {
+				if transaction.FromAddress == _address {
+					balance -= transaction.Amount
+				}
+
+				if transaction.ToAddress == _address {
+					balance += transaction.Amount
+				}
 			}
 
-			if transaction.toAddress == _address {
-				balance += transaction.amount
-			}
 		}
 	}
 
 	return balance
+}
+
+func (b *Blockchain) submitTransaction(_fromAddress, _toAddress string, _amount int, _signingKey *ecdsa.PrivateKey) {
+	tx := newTransaction(_fromAddress, _toAddress, _amount, _signingKey)
+	balance := b.getBalance(_fromAddress)
+	if balance < _amount {
+		tx.Status = "invalid"
+	}
+	b.pendingTransactions = append(b.pendingTransactions, tx)
+}
+
+func (b *Blockchain) isValid() bool {
+	for _, block := range b.chain {
+		if !block.isValid() {
+			return false
+		}
+	}
+
+	return true
 }

@@ -2,49 +2,67 @@ package main
 
 import (
 	"crypto/ecdsa"
-	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
+	"log"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type Transaction struct {
-	fromAddress, toAddress string
-	amount                 int
-	signature              []byte
+	FromAddress string `json:"fromAddress"`
+	ToAddress   string `json:"toAddress"`
+	Status      string `json:"status"`
+	Amount      int    `json:"amount"`
+	Signature   []byte `json:"signature"`
 }
 
 func newTransaction(_fromAddress, _toAddress string, _amount int, _signingKey *ecdsa.PrivateKey) *Transaction {
-	tx := &Transaction{fromAddress: _fromAddress, toAddress: _toAddress, amount: _amount}
+	tx := &Transaction{FromAddress: _fromAddress, ToAddress: _toAddress, Amount: _amount}
 	if _signingKey != nil {
 		tx.signTransaction(_signingKey)
 	}
 	return tx
 }
 
-func (t *Transaction) calculateHash() []byte {
-	data := []byte(t.fromAddress + t.toAddress + fmt.Sprint(t.amount))
-	hash := sha256.Sum256(data)
-	return hash[:]
+func (t *Transaction) calculateHash() common.Hash {
+	data := []byte(t.FromAddress + t.ToAddress + fmt.Sprint(t.Amount))
+	hash := crypto.Keccak256Hash(data)
+	return hash
 }
 
 func (t *Transaction) signTransaction(signingKey *ecdsa.PrivateKey) {
 	hash := t.calculateHash()
-	r, s, _ := ecdsa.Sign(rand.Reader, signingKey, hash)
-	signature := r.Bytes()
-	signature = append(signature, s.Bytes()...)
-	t.signature = signature
+	signature, err := crypto.Sign(hash.Bytes(), signingKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t.Signature = signature
 }
 
-// func (t *Transaction) isValid() bool {
-// 	if t.fromAddress == "" {
-// 		return true
-// 	}
+func (t *Transaction) isValid() bool {
 
-// 	if t.signature == nil || len(t.signature) == 0 {
-// 		return false
-// 	}
+	if t.FromAddress == "" {
+		return true
+	}
 
-// 	// Verify
-// 	verifystatus := ecdsa.Verify(&signingKey.PublicKey, t.calculateHash(), r, s)
-// 	fmt.Println(verifystatus) // should be true
-// }
+	if t.Signature == nil || len(t.Signature) == 0 || t.Status == "invalid" {
+		return false
+	}
+
+	sigPublicKeyECDSA, err := crypto.SigToPub(t.calculateHash().Bytes(), t.Signature)
+	if err != nil {
+		log.Fatal(err)
+	}
+	address := crypto.PubkeyToAddress(*sigPublicKeyECDSA).Hex()
+
+	if t.FromAddress != address {
+		return false
+	}
+
+	sigPublicKeyBytes := crypto.FromECDSAPub(sigPublicKeyECDSA)
+	signatureNoRecoverID := t.Signature[:len(t.Signature)-1]
+	verified := crypto.VerifySignature(sigPublicKeyBytes, t.calculateHash().Bytes(), signatureNoRecoverID)
+
+	return verified
+}

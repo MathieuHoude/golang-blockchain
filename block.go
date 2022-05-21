@@ -17,10 +17,18 @@ type Block struct {
 }
 
 func newBlock(_previousHash string, _difficulty int, _pendingTransactions []*Transaction) *Block {
-	block := Block{timestamp: time.Now(), previousHash: _previousHash, nonce: 0, transactions: _pendingTransactions}
-	block.calculateHash()
+	for _, pendingTransaction := range _pendingTransactions {
+		if pendingTransaction.isValid() {
+			pendingTransaction.Status = "mined"
+		} else {
+			pendingTransaction.Status = "rejected"
+		}
+	}
+	block := &Block{timestamp: time.Now(), previousHash: _previousHash, nonce: 0, transactions: _pendingTransactions}
+	block.hash = block.calculateHash()
 	block.mineBlock(_difficulty)
-	return &block
+
+	return block
 }
 
 func (b *Block) calculateHash() string {
@@ -30,25 +38,32 @@ func (b *Block) calculateHash() string {
 	} else {
 		transactions = []byte("")
 	}
+	StringifiedTransactions := string(transactions)
 
-	data := []byte(b.timestamp.String() + b.previousHash + string(transactions) + fmt.Sprint(b.nonce))
+	data := []byte(b.timestamp.String() + b.previousHash + StringifiedTransactions + fmt.Sprint(b.nonce))
 	hash := sha256.Sum256(data)
-	b.hash = hex.EncodeToString(hash[:])
-	return b.hash
+	return hex.EncodeToString(hash[:])
 }
 
 func (b *Block) mineBlock(_difficulty int) {
 	for b.hash[0:_difficulty] != strings.Repeat("0", _difficulty) {
-		b.calculateHash()
+		b.hash = b.calculateHash()
 		b.nonce += 1
 	}
 
 	fmt.Printf("Block mined: %s \n", b.hash)
 }
 
-func (b *Block) isValid(newBlock, oldBlock Block) bool {
-	if b.calculateHash() != b.hash {
+func (b *Block) isValid() bool {
+	hash := b.calculateHash()
+	if hash != b.hash {
 		return false
+	}
+
+	for _, tx := range b.transactions {
+		if !tx.isValid() {
+			return false
+		}
 	}
 
 	return true

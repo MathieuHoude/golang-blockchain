@@ -2,8 +2,6 @@ package main
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"log"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -33,7 +31,7 @@ func createWallet() *Wallet {
 }
 
 func createAccount() *Account {
-	privatekey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader) // this generates a public & private key pair
+	privatekey, _ := crypto.GenerateKey()
 	privateKeyBytes := crypto.FromECDSA(privatekey)
 	publicKey := privatekey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
