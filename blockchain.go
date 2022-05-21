@@ -17,6 +17,7 @@ func newBlockchain(_difficulty, _miningReward int, accounts []*Account) *Blockch
 	return &Blockchain{chain: []*Block{genesisBlock}, difficulty: _difficulty, miningReward: _miningReward}
 }
 
+//minePendingTransactions takes all pending transactions and add them to a new block. It then creates a new transaction for the mining reward.
 func (b *Blockchain) minePendingTransactions(miningRewardAddress string) {
 	latestBlock := b.chain[len(b.chain)-1]
 	newBlock := newBlock(latestBlock.hash, b.difficulty, b.pendingTransactions)
@@ -24,6 +25,7 @@ func (b *Blockchain) minePendingTransactions(miningRewardAddress string) {
 	b.pendingTransactions = []*Transaction{newTransaction("", miningRewardAddress, b.miningReward, nil)}
 }
 
+//getBalance calculates the current balance of a provided address.
 func (b *Blockchain) getBalance(_address string) int {
 	balance := 0
 
@@ -45,6 +47,8 @@ func (b *Blockchain) getBalance(_address string) int {
 	return balance
 }
 
+//submitTransaction creates a new transaction based on the data submitted.
+//If the _fromAddress does not have a high enough balance, the transaction is automatically flagged as invalid.
 func (b *Blockchain) submitTransaction(_fromAddress, _toAddress string, _amount int, _signingKey *ecdsa.PrivateKey) {
 	tx := newTransaction(_fromAddress, _toAddress, _amount, _signingKey)
 	balance := b.getBalance(_fromAddress)
@@ -54,6 +58,7 @@ func (b *Blockchain) submitTransaction(_fromAddress, _toAddress string, _amount 
 	b.pendingTransactions = append(b.pendingTransactions, tx)
 }
 
+//isValid verifies the integrity of each block in the chain.
 func (b *Blockchain) isValid() bool {
 	for _, block := range b.chain {
 		if !block.isValid() {

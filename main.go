@@ -15,7 +15,7 @@ func main() {
 	goCoin.minePendingTransactions(accounts[0].address)
 	valid := goCoin.isValid()
 	fmt.Printf("%v \n", valid)
-	goCoin.chain[0].transactions[0].Amount = 50
+	goCoin.chain[0].transactions[2].Amount = 50
 	valid = goCoin.isValid()
 	fmt.Printf("%v \n", valid)
 	spew.Dump(goCoin)

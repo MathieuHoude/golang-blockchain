@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+//Block represents a block in our blockchain
 type Block struct {
 	timestamp          time.Time
 	transactions       []*Transaction
@@ -31,6 +32,7 @@ func newBlock(_previousHash string, _difficulty int, _pendingTransactions []*Tra
 	return block
 }
 
+//calculateHash hashes the block's content
 func (b *Block) calculateHash() string {
 	var transactions []byte
 	if len(b.transactions) != 0 {
@@ -38,22 +40,23 @@ func (b *Block) calculateHash() string {
 	} else {
 		transactions = []byte("")
 	}
-	StringifiedTransactions := string(transactions)
 
-	data := []byte(b.timestamp.String() + b.previousHash + StringifiedTransactions + fmt.Sprint(b.nonce))
+	data := []byte(b.timestamp.String() + b.previousHash + string(transactions) + fmt.Sprint(b.nonce))
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
 }
 
+//mineBlock handles the Proof-of-Work part of our blockchain. It increments the nonce and recalculate the block's hash until it respects the difficulty level.
 func (b *Block) mineBlock(_difficulty int) {
 	for b.hash[0:_difficulty] != strings.Repeat("0", _difficulty) {
-		b.hash = b.calculateHash()
 		b.nonce += 1
+		b.hash = b.calculateHash()
 	}
 
 	fmt.Printf("Block mined: %s \n", b.hash)
 }
 
+//isValid checks the integrity of a block. It first verify if the block itself has been tampered with by recalculating the hash, and then check for invalid transactions.
 func (b *Block) isValid() bool {
 	hash := b.calculateHash()
 	if hash != b.hash {
