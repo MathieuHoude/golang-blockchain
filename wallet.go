@@ -26,7 +26,6 @@ func createWallet() *Wallet {
 		var account *Account = createAccount()
 		accounts = append(accounts, account)
 	}
-
 	return &Wallet{accounts: accounts}
 }
 

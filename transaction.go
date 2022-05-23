@@ -49,11 +49,15 @@ func (t *Transaction) signTransaction(signingKey *ecdsa.PrivateKey) {
 //Finally, we verify that the key which signed the transaction matches with the sender address.
 func (t *Transaction) isValid() bool {
 
+	if t.Status == "invalid" {
+		return false
+	}
+
 	if t.FromAddress == "" {
 		return true
 	}
 
-	if t.Signature == nil || len(t.Signature) == 0 || t.Status == "invalid" {
+	if t.Signature == nil || len(t.Signature) == 0 {
 		return false
 	}
 
